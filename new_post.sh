@@ -1,0 +1,1 @@
+bundle exec jekyll compose "My New Post" --post

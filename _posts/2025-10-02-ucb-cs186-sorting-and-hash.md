@@ -7,8 +7,6 @@ math: true
 
 # Sorting & Hash
 
-
-
 # Sorting
 
 
@@ -83,11 +81,6 @@ Merge Sort 阶段优化：一次合并超过 2 个 Page。我们需要一个 Pag
 因此得到 IO 次数为 $$ 2*N*  (1 + \lceil{log_{B-1}{N/B}}\rceil) $$
 
 
-
-
-
-
-
 # Hash
 
 场景同排序一样，我们不能将所有数据都放入内存中，不能直接构建一个完整的 Hash 表来实现 Group By，所以我们需要一个外部 Hash 算法。
@@ -112,8 +105,3 @@ Merge Sort 阶段优化：一次合并超过 2 个 Page。我们需要一个 Pag
 例子如下：
 
 ![image-20251002114644973](/assets/images/image-20251002114644973.png)
-
-
-
-
-
