@@ -96,6 +96,7 @@ theme_mode: # [light | dark]
 #
 # e.g. 'https://cdn.com'
 cdn:
+# media_subpath: /_posts/assets
 
 # the avatar on sidebar, support local or CORS resources
 avatar: https://avatars.githubusercontent.com/u/143303485?s=96&v=4
