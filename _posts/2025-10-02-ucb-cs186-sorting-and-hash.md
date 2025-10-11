@@ -4,6 +4,7 @@ title: UCB-CS186 Sorting and Hash
 date: 2025-10-02 10:49 +0800
 math: true
 categories: [公开课, 数据库]
+tags: [lecture, database] 
 ---
 
 # Sorting & Hash

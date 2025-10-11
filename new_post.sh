@@ -1,1 +1,1 @@
-bundle exec jekyll compose "My New Post" --post
+bundle exec jekyll compose "6.s081-2024-mmap" --post
