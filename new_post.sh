@@ -1,1 +1,1 @@
-bundle exec jekyll compose "6.s081-2024-mmap" --post
+bundle exec jekyll compose "6.s081-Lec15-logging" --post
