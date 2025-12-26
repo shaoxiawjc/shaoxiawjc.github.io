@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -e
+# 运行脚本来整理 _posts 中的图片，并将变更加入暂存区
+python3 scripts/move_images_in_posts.py
