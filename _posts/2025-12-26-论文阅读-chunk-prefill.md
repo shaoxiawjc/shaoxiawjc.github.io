@@ -32,4 +32,4 @@ date: 2025-12-26 22:59 +0800
 # Decode Block Arch
 
 
-![image-20251226231338290](./2025-12-26-论文阅读-chunk-prefill.assets/image-20251226231338290.png)
+![image-20251226231338290](/assets/images/image-20251226231338290.png)

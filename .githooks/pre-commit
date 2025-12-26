@@ -2,4 +2,4 @@
 set -e
 # 调试信息，确保在 commit 时能看到 hook 已运行的输出
 echo "[pre-commit] running move_images_in_posts hook" >&2
-python3 -u scripts/move_images_in_posts.py
+python3 -u scripts/move_images_in_posts.py --all

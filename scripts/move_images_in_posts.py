@@ -14,6 +14,8 @@ import sys
 import shutil
 import hashlib
 import subprocess
+import argparse
+import glob
 
 RE_IMG = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
 ASSETS_DIR = "assets/images"
@@ -30,6 +32,13 @@ def staged_md_files():
     except subprocess.CalledProcessError:
         return []
     return [p for p in out.splitlines() if p.startswith("_posts/") and p.lower().endswith('.md')]
+
+
+def all_md_files():
+    # 返回工作区下的所有 _posts 下的 markdown 文件（递归）
+    files = glob.glob(os.path.join("_posts", "**", "*.md"), recursive=True)
+    # 规范化路径
+    return [os.path.normpath(f) for f in files]
 
 
 def make_name_collision_free(dest_dir, basename, src_path=None):
@@ -128,9 +137,16 @@ def process_file(path):
 
 
 def main():
-    files = staged_md_files()
+    parser = argparse.ArgumentParser(description='Move images referenced in _posts to assets/images')
+    parser.add_argument('--all', action='store_true', help='Process all _posts/*.md files in the working tree (not only staged)')
+    args = parser.parse_args()
+
+    files = all_md_files() if args.all else staged_md_files()
     if not files:
-        print("[move_images_in_posts] 未发现暂存的 _posts/*.md 文件，跳过处理。")
+        if args.all:
+            print("[move_images_in_posts] 未发现工作区中的 _posts/*.md 文件，跳过处理。")
+        else:
+            print("[move_images_in_posts] 未发现暂存的 _posts/*.md 文件，跳过处理。")
         return 0
     print(f"[move_images_in_posts] 将处理的 Markdown 文件: {files}")
     any_changed = False
