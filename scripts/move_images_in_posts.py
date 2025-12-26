@@ -70,6 +70,33 @@ def ensure_assets():
     os.makedirs(ASSETS_DIR, exist_ok=True)
 
 
+def remove_empty_parent_dirs(path, stop_at=None):
+    """从给定文件路径开始，向上删除空目录，直到碰到 stop_at（包含）或到达工作区根。
+    stop_at 接受绝对路径或 None。"""
+    try:
+        cur = os.path.abspath(os.path.dirname(path))
+        stop_at_abs = os.path.abspath(stop_at) if stop_at else None
+        while True:
+            if not os.path.isdir(cur):
+                break
+            # 不要删除 stop_at 目录
+            if stop_at_abs and os.path.normpath(cur) == os.path.normpath(stop_at_abs):
+                break
+            # 如果目录为空则删除，否则停止
+            try:
+                if not os.listdir(cur):
+                    os.rmdir(cur)
+                    print(f"[move_images_in_posts] 已删除空目录: {cur}")
+                    cur = os.path.dirname(cur)
+                    continue
+                else:
+                    break
+            except Exception:
+                break
+    except Exception:
+        pass
+
+
 def process_file(path):
     changed = False
     try:
@@ -106,11 +133,16 @@ def process_file(path):
         try:
             shutil.move(src_path, dest_path)
             PROCESSED_IMAGES.append((src_path, dest_path))
+            # 移动成功后尝试删除可能变为空的父目录（不超出 _posts）
+            # 计算 _posts 目录的绝对路径作为删除上限
+            posts_dir = os.path.abspath(os.path.join(os.getcwd(), '_posts'))
+            remove_empty_parent_dirs(src_path, stop_at=posts_dir)
         except Exception as e:
             # 如果移动失败，尝试复制
             try:
                 shutil.copy2(src_path, dest_path)
                 PROCESSED_IMAGES.append((src_path, dest_path))
+                # 复制时不删除源目录（因为源文件仍存在）
             except Exception:
                 return m.group(0)
         changed = True
