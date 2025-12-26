@@ -117,6 +117,8 @@ def process_file(path):
             run(f'git add "{ASSETS_DIR}"')
         except Exception:
             pass
+    else:
+        print(f"[move_images_in_posts] 文件 {path} 中未发现需要移动的本地图片。")
     return changed
 
 
