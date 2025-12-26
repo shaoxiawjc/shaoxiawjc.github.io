@@ -130,6 +130,7 @@ def process_file(path):
 def main():
     files = staged_md_files()
     if not files:
+        print("[move_images_in_posts] 未发现暂存的 _posts/*.md 文件，跳过处理。")
         return 0
     print(f"[move_images_in_posts] 将处理的 Markdown 文件: {files}")
     any_changed = False
@@ -143,6 +144,8 @@ def main():
             print("[move_images_in_posts] 处理摘要：")
             for src, dst in PROCESSED_IMAGES:
                 print(f"  - {src} -> {dst}")
+    else:
+        print("[move_images_in_posts] 未发现需要移动的本地图片。")
     return 0
 
 
