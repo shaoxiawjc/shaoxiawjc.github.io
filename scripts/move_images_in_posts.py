@@ -17,6 +17,7 @@ import subprocess
 
 RE_IMG = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
 ASSETS_DIR = "assets/images"
+PROCESSED_IMAGES = []
 
 
 def run(cmd):
@@ -90,13 +91,17 @@ def process_file(path):
         basename = os.path.basename(src_path)
         safe_name = make_name_collision_free(ASSETS_DIR, basename, src_path=src_path)
         dest_path = os.path.join(ASSETS_DIR, safe_name)
+        # 打印将要处理的图片路径
+        print(f"[move_images_in_posts] 处理图片: {src_path} -> /{ASSETS_DIR}/{safe_name}")
         # 移动源文件到目标
         try:
             shutil.move(src_path, dest_path)
+            PROCESSED_IMAGES.append((src_path, dest_path))
         except Exception as e:
             # 如果移动失败，尝试复制
             try:
                 shutil.copy2(src_path, dest_path)
+                PROCESSED_IMAGES.append((src_path, dest_path))
             except Exception:
                 return m.group(0)
         changed = True
@@ -126,6 +131,7 @@ def main():
     files = staged_md_files()
     if not files:
         return 0
+    print(f"[move_images_in_posts] 将处理的 Markdown 文件: {files}")
     any_changed = False
     for f in files:
         if process_file(f):
@@ -133,6 +139,10 @@ def main():
     if any_changed:
         print("[move_images_in_posts] 已将本地图片移动到 assets/images/ 并更新 Markdown 引用，已把更改加入暂存区。")
         print("请检查更改并继续提交 (git commit)。")
+        if PROCESSED_IMAGES:
+            print("[move_images_in_posts] 处理摘要：")
+            for src, dst in PROCESSED_IMAGES:
+                print(f"  - {src} -> {dst}")
     return 0
 
 
