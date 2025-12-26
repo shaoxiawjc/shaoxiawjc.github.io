@@ -84,6 +84,7 @@ def process_file(path):
         src_path = os.path.normpath(os.path.join(md_dir, target_path))
         if not os.path.exists(src_path):
             # 未找到文件，原样保留
+            print(f"[move_images_in_posts] 警告: 未找到图片文件 {src_path}，跳过处理。")
             return m.group(0)
         ensure_assets()
         basename = os.path.basename(src_path)
