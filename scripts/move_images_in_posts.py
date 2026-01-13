@@ -42,11 +42,19 @@ def all_md_files():
 
 
 def make_name_collision_free(dest_dir, basename, src_path=None):
+    """如果目标已存在，尝试在文件名末尾添加 -1、-2 ... 直到找到可用名字。
+    如果多次尝试仍失败，回退到使用短哈希作为后缀以确保唯一性。"""
     name = basename
     dest = os.path.join(dest_dir, name)
     if not os.path.exists(dest):
         return name
-    # if exists, try appending short hash of file content (source if available, otherwise existing name)
+    base, ext = os.path.splitext(name)
+    # 逐次尝试 -1, -2 ...
+    for i in range(1, 1000):
+        candidate = f"{base}-{i}{ext}"
+        if not os.path.exists(os.path.join(dest_dir, candidate)):
+            return candidate
+    # 回退到 hash 后缀以确保唯一性
     try:
         if src_path and os.path.exists(src_path):
             h = hashlib.sha1(open(src_path, 'rb').read()).hexdigest()[:8]
@@ -54,7 +62,7 @@ def make_name_collision_free(dest_dir, basename, src_path=None):
             h = hashlib.sha1(name.encode()).hexdigest()[:8]
     except Exception:
         h = hashlib.sha1(name.encode()).hexdigest()[:8]
-    name2 = f"{os.path.splitext(name)[0]}-{h}{os.path.splitext(name)[1]}"
+    name2 = f"{base}-{h}{ext}"
     return name2
 
 
