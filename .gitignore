@@ -25,3 +25,8 @@ package-lock.json
 # Misc
 _sass/vendors
 assets/js/dist
+
+# macOS
+.DS_Store
+
+_posts/.obsidian
