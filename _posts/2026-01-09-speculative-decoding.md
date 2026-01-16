@@ -12,7 +12,7 @@ date: 2026-01-09 15:43 +0800
 
 为了提高 Decode 的效率，一个思路是提高解码过程的算术强度（即总浮点运算次数 FLOPs 与数据传输量之间的比值），减少解码步骤。因此就有了推测解码（Speculative Decoding）。其经典的模型结构如下：
 
-![alt text](./image.png)
+![alt text](/assets/images/2026-01-09-speculative-decoding/image.png)
 
 引入一个 草稿模型（Draft Model），其模型大小通常远小于主模型，同时 tokenizer 和主模型相同。草稿模型自回归的生成 k 个 token，并交给主模型一次并行的去验证，从而减少 decode 的次数。
 
@@ -28,13 +28,15 @@ Speculative Decoding 的工作有很多，这里列出几个比较主流的 work
 - Medusa
 - EAGLE
 - DeepSeek MTP
+- DeepSeek MTP
 
 
 # Speculative Decoding
 
 最早的工作是由 Google 和 DeepMind 提出的两篇 Speculative Decoding，其模型结构和算法基本都一样，都是 Draft then Verify
+最早的工作是由 Google 和 DeepMind 提出的两篇 Speculative Decoding，其模型结构和算法基本都一样，都是 Draft then Verify
 伪代码如下：
-![alt text](./image-4.png)
+![alt text](/assets/images/2026-01-09-speculative-decoding/image-4.png)
 假设我们每次草稿模型生成连续的 K 个 token，当前序列长度为 t
 1. 使用草稿模型自回归的生成 K 个 token（需保留对应 token 的 prob）
 2. 使用主模型并行的验证 K 个序列（得到每一个 token 对应的主模型的 prob）
@@ -54,7 +56,7 @@ Speculative Decoding 的工作有很多，这里列出几个比较主流的 work
 
 Deepmind 论文中给出的加速效果大约为 2 ～ 3倍左右
 
-!(test)[/./Pasted image 20260109155457.png]
+![Pasted image 20260111212352](/assets/images/2026-01-09-speculative-decoding/Pasted image 20260111212352.png)
 
 不足：
 虽然 Draft-Verify 在多个场景下可以提高效率，但是还是存在如下的缺点：
@@ -72,14 +74,15 @@ Deepmind 论文中给出的加速效果大约为 2 ～ 3倍左右
 - medusa-1：模型权重冻结
 - medusa-2：模型和预测头一起训练
 
-![alt text](./image-3.png)
+![alt text](/assets/images/2026-01-09-speculative-decoding/image-3.png)
 在推理过程中，medusa 会对于每一个 medusa head 使用不同的 topk 来生成 topk 个 token，并使用 Tree Attention 来进行并行处理，最后通过 typical acceptance 来进行筛选合理的序列路径。
 
 ## Train Medusa Head
 
 第 k 个解码头的定义如下，类似 LMHead
+第 k 个解码头的定义如下，类似 LMHead
 
-![alt text](./image-1.png)
+![alt text](/assets/images/2026-01-09-speculative-decoding/image-1.png)
 如何训练 Medusa Head？
 
 Medusa-1
@@ -110,7 +113,7 @@ Medusa 在推理过程中的每一个头都会输出 topk 个候选 token，然�
 
 类似下图中的注意力矩阵，就是将 AttentionMask 变成了 Tree Mask，相当于一次计算就把所有的路径计算完，得到每一个序列最后的 logits。
 
-![alt text](./image-2.png)
+![alt text](/assets/images/2026-01-09-speculative-decoding/image-2.png)
 
 Tree Attention 的优势：如果是早期的验证方式，其方法是将所有的候选序列放到同一个批次里，这会导致一些不必要的计算和空间浪费，比如可能树的根节点的 attention 被计算多次，同时作为 kvcache 也会造成冗余的存储，造成资源的浪费。而 Tree Attention 则可以避免上述的问题。
 
@@ -145,11 +148,13 @@ Tree Attention 的优势：如果是早期的验证方式，其方法是将所�
 ## 加速效果
 
 大约在 2.5 ～ 3.7 左右
-!(test3)[assets/Pasted image 20260111212917.png]
+![Pasted image 20260111212917](/assets/images/2026-01-09-speculative-decoding/Pasted image 20260111212917.png)
 
 ## 缺陷
 
 由于 Medusa 的每一个头实际上是独立输出的，不会相互依赖，比如 第 4 个 token 不依赖第 3 个 token，导致丢失部分序列信息，因此 Medusa 的生成效果通常不是很好，同时也会导致草稿模型的接受率较低。
+
+本质上效率较低的原因还是草稿部分的接受率较低，如果能提高草稿模型的接受率就可以达到高的推理性能。
 
 本质上效率较低的原因还是草稿部分的接受率较低，如果能提高草稿模型的接受率就可以达到高的推理性能。
 
@@ -189,17 +194,20 @@ EAGLE（Extrapolation Algorithm for Greater Language-model Efficiency）提出�
 - 处理流程： 使用目标 LLM 对草稿树中的 token 逐一进行验证，判断其是否符合原始模型的分布。
 - 输出： 最终被接受的 token 序列，作为模型输出的一部分。
 
-![alt text](./image-5.png)
+![alt text](/assets/images/2026-01-09-speculative-decoding/image-5.png)
 得到了草稿树之后，就可以使用 Tree Attention 在主模型上进行验证了。
 
 
 EAGLE 之后的工作，大部分都是在优化如何提高草稿模型的接受率
 - EGALE-2：优化了草稿树，提出了一些裁剪方法，将草稿树设置为动态草稿树来提高接受率
 - EGALE-3：不只是使用倒数第二层特征，而是融合多层特征进行自回归，提高接受率
+EAGLE 之后的工作，大部分都是在优化如何提高草稿模型的接受率
+- EGALE-2：优化了草稿树，提出了一些裁剪方法，将草稿树设置为动态草稿树来提高接受率
+- EGALE-3：不只是使用倒数第二层特征，而是融合多层特征进行自回归，提高接受率
 
 
 加速效果
-!(test2)[./assets/Pasted image 20260111213037.png]
+![Pasted image 20260111213037](/assets/images/2026-01-09-speculative-decoding/Pasted image 20260111213037.png)
 
 # DeepSeek MTP
 
@@ -219,7 +227,7 @@ DeepSeek MTP 的结构如下：
 
 
 
-!(test1)[./assets/Pasted image 20260111214331.png]
+![Pasted image 20260111214331](/assets/images/2026-01-09-speculative-decoding/Pasted image 20260111214331.png)
 MTP 的优势
 - 有密集的监督信号，在普通的训练方法中，单个 token 实际上只被利用了一次，而在 MTP 中，一个 token 可以被利用多次
 - 有长距离依赖训练，模型可以学习到长上下文的联系
