@@ -85,7 +85,7 @@ private void fetchNextRightPage() {
 接下来就是如何进行遍历了，这一部分只要对比伪代码图和给出的图片样例就会比较好思考：
 
 
-![alt text](image-2.png)
+![alt text](/assets/images/image-2.png)
 
 ![](https://cs186.gitbook.io/project/~gitbook/image?url=https%3A%2F%2F678656433-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-legacy-files%2Fo%2Fassets%252F-MFVQnrLlCBowpNWJo1E%252Fsync%252F6417e98132194a70acfd2b305f32d6ed096028bc.gif%3Fgeneration%3D1601331282191017%26alt%3Dmedia&width=768&dpr=1&quality=100&sign=88d9729a&sv=2)
 
