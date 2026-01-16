@@ -30,3 +30,5 @@ assets/js/dist
 .DS_Store
 
 _posts/.obsidian
+
+.venv
